@@ -2,7 +2,9 @@
 name = "guardian"
 version = "0.1.0"
 description = "This is a super awesome bootstrapped Python project"
-authors = [ "Abraham Yusuf <Abraham Yusuf@lightspeedhq.com>" ]
+authors = [
+    "Abraham Yusuf <abraham.yusuf@lightspeedhq.com>"
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"

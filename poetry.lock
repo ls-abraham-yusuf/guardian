@@ -657,7 +657,7 @@ requests = "*"
 tabulate = "*"
 
 [package.extras]
-db2 = ["ibm-db"]
+db2 = ["ibm_db"]
 word-list = ["pyahocorasick"]
 
 [package.source]
