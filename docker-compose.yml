@@ -1,0 +1,22 @@
+version: '3.4'
+
+x-environment-variables: &environment-variables
+  AUTHENTICATION_ENABLED: 0
+  ENABLE_RELOAD: 1
+  ENABLE_PRETTY_JSON_LOGS: 1
+  LOG_LEVEL: 'debug'
+
+x-build-args: &build-args
+  EXTRA_INDEX_URLS: "--extra-index-url https://${PYPI_USER:?Environment variable PYPI_USER is not set - check README}:${PYPI_RWD_TOKEN:?Environment variable PYPI_RWD_TOKEN is not set - check README}@lightspeedhq.jfrog.io/artifactory/api/pypi/pypi-local/simple"
+
+services:
+  guardian:
+    build:
+      context: .
+      args:
+        MODULE_NAME: "guardian"
+        <<: *build-args
+    environment:
+      <<: *environment-variables
+    ports:
+      - '127.0.0.1:8081:8080'

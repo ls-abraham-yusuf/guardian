@@ -1,0 +1,4 @@
+# Extra ephemeral storage limit protects sandbox nodes from storage pressure
+resources:
+  limits:
+    ephemeral-storage: 200Mi

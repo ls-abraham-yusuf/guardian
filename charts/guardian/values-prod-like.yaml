@@ -1,0 +1,16 @@
+# Scale up the service to at least 2 replicas if possible
+replicaCount: 2
+# Set the resource requests based on sandbox usage and adapt the value later as the service is getting more usage
+# Default ephemeral storage limit should be enough
+# Initially the ephemeral-storage limit is set by S&I squad based on the NewRelic storage usage data.
+# If a bigger ephemeral storage is required consider using persistent volumes
+resources:
+  requests:
+    memory: 1Gi
+    cpu: 1000m
+  limits:
+    ephemeral-storage: 500Mi
+
+apm:
+  datadog:
+    enabled: true

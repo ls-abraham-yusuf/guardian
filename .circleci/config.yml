@@ -1,0 +1,119 @@
+version: 2.1
+
+orbs:
+  python: lsk/python@1.4
+  docker-helm: lsk/docker-helm@1.3
+  fleet: lsk/fleet@1.2
+  vessel: lsk/vessel@0.3
+
+anchors:
+  only-main-branch: &only-main-branch
+    filters:
+      branches:
+        only:
+          - main
+
+parameters:
+  deploy:
+    type: boolean
+    default: false
+
+  cluster:
+    type: enum
+    default: "lskstg"
+    enum:
+      - "lskstg"
+
+workflows:
+  default-workflow:
+    jobs:
+      - python/pre-commit:
+          executor-name: "python-3-10"
+          context: global
+          use-remote-docker: false  # set this to true if you have an apidocs dir
+
+      - python/test:
+          name: "unit-tests"
+          executor-name: "python-3-11"
+          test-command: "pytest ./tests/unit_tests -vv --junitxml=test-results/junit.xml"
+          context: global
+
+      - docker-helm/build-test-push:
+          name: "docker-build-and-push"
+          image-name: "guardian"
+          docker-version: "20.10.7"
+          build-additional-arguments: >-
+            --secret id=pip.conf,src=pip.conf
+          enable-buildkit: true
+          prepare-build-secrets:
+            - python/create-pip-config
+          context: global
+          requires:
+            - unit-tests
+
+      - python/test-integration-docker:
+          name: "integration-tests"
+          executor-name: "python-3-11"
+          context: global
+          test-command: 'pytest ./tests/integration_tests -vv --junitxml=test-results/junit.xml'
+          coverage: true
+          coverage-remote-file: ""
+          requires:
+            - "docker-build-and-push"
+          pre-steps:
+            - attach_workspace:
+                at: '~/persisted'
+            - docker-helm/restore-pushed-docker-images
+            - run:
+                name: Export DOCKER_IMAGE_NAME to be tested
+                command: |
+                  pushed_docker_image="${HOME}/persisted/guardian/docker-ecr-tags"
+                  if [ ! -f "${pushed_docker_image}" ]; then
+                      echo "${pushed_docker_image} does not exist." && exit 1
+                  fi
+                  echo "export DOCKER_IMAGE_NAME=$(head -1 ${pushed_docker_image})" >> "${BASH_ENV}"
+                  source "${BASH_ENV}"
+                  echo "Docker image name: $DOCKER_IMAGE_NAME"
+
+      - docker-helm/push-helm-chart:
+          name: helm-build-and-push
+          context: global
+          chart-path: "./charts/guardian"
+          run-linter: false
+          requires:
+            - integration-tests
+
+# Uncomment this section once you are ready to go to production
+#      - vessel/deploy:
+#          name: "vessel-deploy-staging"
+#          context: global
+#          requires:
+#            - helm-build-and-push
+#          chart-name: "guardian"
+#          cluster-name: "lskstg"
+#          <<: *only-main-branch
+#
+#      - vessel/deploy:
+#          name: "vessel-deploy-trial"
+#          context: global
+#          requires:
+#            - helm-build-and-push
+#          chart-name: "guardian"
+#          cluster-name: "lsktrial"
+#          <<: *only-main-branch
+#
+#      - vessel/deploy:
+#          name: "vessel-deploy-prod"
+#          context: global
+#          requires:
+#            - vessel-deploy-trial
+#            - vessel-deploy-staging
+#          chart-name: "guardian"
+#          cluster-name: "lskprod"
+#          <<: *only-main-branch
+
+      - fleet/trigger-update:
+          name: trigger-fleet-update
+          context: global
+          requires:
+            - helm-build-and-push

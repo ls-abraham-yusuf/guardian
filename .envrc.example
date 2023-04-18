@@ -1,0 +1,3 @@
+# Python Environment
+export PYPI_USER="dummy-user"
+export PYPI_RWD_TOKEN="dummy-token"

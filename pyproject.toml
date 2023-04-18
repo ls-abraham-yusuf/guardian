@@ -1,0 +1,77 @@
+[tool.poetry]
+name = "guardian"
+version = "0.1.0"
+description = "This is a super awesome bootstrapped Python project"
+authors = [ "Abraham Yusuf <Abraham Yusuf@lightspeedhq.com>" ]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+uvicorn = "^0.20"
+lssvc = "^0.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2"
+coverage = "^6.5.0"
+pytest-asyncio = "^0.20.3"
+pylint = ">=2.15"
+isort = ">=5.11"
+black = ">=22.12"
+pre-commit = ">=2.20"
+ruff = ">=0.0.235"
+detect-secrets = { git = "https://github.com/ibm/detect-secrets.git", tag = "0.13.1+ibm.56.dss" }
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "lsh"
+url = "https://lightspeedhq.jfrog.io/artifactory/api/pypi/pypi-local/simple"
+
+[tool.pytest.ini_options]
+minversion = "6.2"
+addopts = "--asyncio-mode=auto --color=yes --tb=short -vvv -ra"
+testpaths = [
+    "tests/unit_tests",
+    "tests/integration_tests",
+]
+
+[tool.black]
+line-length = 120
+
+# Uncomment for pyright, make it stricter if you like by keeping the report* commented out
+# [tool.pyright]
+# venv = ".venv"
+# typeCheckingMode = "strict"
+# reportUnknownMemberType = "none"
+# reportUnknownVariableType = "none"
+# reportUnknownParameterType = "none"
+# reportMissingTypeStubs = "none"
+# reportUnknownArgumentType = "none"
+# reportMissingParameterType = "none"
+# reportMissingTypeArgument = "none"
+# reportUntypedFunctionDecorator = "none"
+# reportUntypedBaseClass = "none"
+
+# See also: https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.ruff]
+# ignore = ["E999"] uncomment if you use match statement, not yet supported by ruff
+select = ["E", "W", "F", "N"]
+line-length = 120
+target-version = "py310"
+
+[tool.pylint.master]
+ignore-paths = [ "^tests/.*$" ]
+
+[tool.pylint.messages_control]
+disable = "R0903, W0511, E0401, C0114, C0115, C0116"
+
+[tool.pylint.format]
+max-line-length = "120"
+
+[tool.pylint.basic]
+good-names = "e, i, j, n, x, fp, id, ok"
