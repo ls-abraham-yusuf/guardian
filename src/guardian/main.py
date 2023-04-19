@@ -1,15 +1,19 @@
 from logging import getLogger
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from lssvc.logs import initialize_logging
 from lssvc.management import Management
 from structlog import get_logger
 
 from guardian import config
-from guardian.routers import example_router
+from guardian.routers import auth
 
 log = get_logger()
+
 app = FastAPI(title="guardian")
+app.mount("/static", StaticFiles(directory=config.guardian.STATIC_DIR), name="static")
+
 management = Management()
 
 
@@ -29,4 +33,4 @@ async def shutdown_event():
 
 # Register your routers here
 app.include_router(management.get_router(), prefix="/management")
-app.include_router(example_router.router, prefix="/example")  # TODO: Remove, only for dev purposes
+app.include_router(auth.router, prefix="/oauth", tags=["OAuth2"])

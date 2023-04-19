@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from lssvc.config import ApiServiceSettings, LogSettings
 
 
@@ -19,6 +21,12 @@ class Guardian(ApiServiceSettings, LogSettings):
 
     # log kafka messages in case processing fails, used in lower envs, only applies to RetryingConsumer
     LOG_KAFKA_RECORDS: bool = False
+
+    # static files directory
+    STATIC_DIR: Path = Path(__file__).parent / "static"
+
+    # templates directory
+    TEMPLATES_DIR: Path = Path(__file__).parent / "templates"
 
 
 guardian = Guardian()

@@ -26,7 +26,7 @@ def docker_compose(*args):
             .rstrip("\n")
         )
         return out
-    except (subprocess.CalledProcessError) as exc:
+    except subprocess.CalledProcessError as exc:
         logger.error("Failed to execute command '%s' - Error: %s", cmd, exc.stdout)
         raise exc
     except Exception as exc:
