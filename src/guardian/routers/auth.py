@@ -4,9 +4,9 @@ import structlog
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
-from oauthlib.oauth2.rfc6749.errors import FatalClientError, OAuth2Error
+from oauthlib.oauth2 import FatalClientError, MetadataEndpoint, OAuth2Error
 
-from guardian.auth import authorization_server, extract_params
+from guardian.openid import extract_params, provider
 
 router = APIRouter()
 
@@ -20,7 +20,7 @@ templates = Jinja2Templates(directory="templates")
 async def authorization_request(request: Request):
     uri, http_method, body, headers = await extract_params(request)
     try:
-        scopes, credentials = authorization_server.validate_authorization_request(uri, http_method, body, headers)
+        scopes, credentials = provider.validate_authorization_request(uri, http_method, body, headers)
 
         # Not necessarily in session but they need to be
         # accessible in the POST view after form submit.
@@ -48,7 +48,7 @@ async def authorize(request: Request, scopes: Annotated[list[str], Form()]):
     credentials = request.session.get("oauth2_credentials", {})
 
     try:
-        headers, body, status = authorization_server.create_authorization_response(
+        headers, body, status = provider.create_authorization_response(
             uri, http_method, body, headers, scopes, credentials
         )
         return Response(content=body, status_code=status, headers=headers)
@@ -65,6 +65,49 @@ async def token(request: Request):
     # use in the validator, do so here.
     credentials = {"foo": "bar"}
 
-    headers, body, status = authorization_server.create_token_response(uri, http_method, body, headers, credentials)
+    headers, body, status = provider.create_token_response(uri, http_method, body, headers, credentials)
 
+    return Response(content=body, status_code=status, headers=headers)
+
+
+@router.post("/introspect")
+async def introspect(request: Request):
+    uri, http_method, body, headers = await extract_params(request)
+    headers, body, status = provider.create_introspect_response(uri, http_method, body, headers)
+    return Response(content=body, status_code=status, headers=headers)
+
+
+@router.post("/revoke")
+async def revoke_token(request: Request):
+    uri, http_method, body, headers = await extract_params(request)
+    headers, body, status = provider.create_revocation_response(uri, http_method, body, headers)
+    return Response(content=body, status_code=status, headers=headers)
+
+
+@router.post("/userinfo")
+async def userinfo(request: Request):
+    uri, http_method, body, headers = await extract_params(request)
+    headers, body, status = provider.create_userinfo_response(uri, http_method, body, headers)
+    return Response(content=body, status_code=status, headers=headers)
+
+
+@router.get("/.well-known")
+async def metadata(request: Request):
+    claims = {
+        "issuer": f"{request.base_url}",
+        "scopes_supported": ["openid", "email", "profile"],
+        "grant_types_supported": [
+            "authorization_code",
+            "client_credentials",
+        ],
+        "token_endpoint": f"{request.url_for('token')}",
+        "authorization_endpoint": f"{request.url_for('authorize')}",
+        "revocation_endpoint": f"{request.url_for('revoke_token')}",
+        "introspection_endpoint": f"{request.url_for('introspect')}",
+        "userinfo_endpoint": f"{request.url_for('userinfo')}",
+    }
+    endpoint = MetadataEndpoint([provider], claims=claims)
+
+    uri, http_method, body, headers = await extract_params(request)
+    headers, body, status = endpoint.create_metadata_response(uri, http_method, body, headers)
     return Response(content=body, status_code=status, headers=headers)

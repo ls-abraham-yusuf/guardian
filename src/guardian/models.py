@@ -2,7 +2,11 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import UUID4, BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
+
+
+def uuid_str() -> str:
+    return str(uuid.uuid4())
 
 
 class GrantType(StrEnum):
@@ -10,12 +14,13 @@ class GrantType(StrEnum):
     CLIENT_CREDENTIALS = "client_credentials"  # pragma: allowlist secret
     IMPLICIT = "implicit"
     PASSWORD = "password"
+    REFRESH_TOKEN = "refresh_token"
 
 
 class User(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    user_id: UUID4 = Field(default_factory=uuid.uuid4, max_length=36)
+    user_id: str = Field(default_factory=uuid_str, max_length=36)
     first_name: str = Field(default="", max_length=150)
     last_name: str = Field(default="", max_length=150)
     is_active: bool = True
@@ -26,7 +31,7 @@ class User(BaseModel):
 
 
 class Client(BaseModel):
-    client_id: UUID4 = Field(default_factory=uuid.uuid4, max_length=36)  # unique client id
+    client_id: str = Field(default_factory=uuid_str, max_length=36)  # unique client id
     user: User
     grant_type: GrantType = GrantType.AUTHORIZATION_CODE
     response_type: str
