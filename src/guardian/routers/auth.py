@@ -1,30 +1,30 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import FatalClientError, MetadataEndpoint, OAuth2Error
 
+from guardian.dependencies import get_templates
 from guardian.openid import extract_params, provider
 
 router = APIRouter()
 
 log = structlog.get_logger()
 
-
-templates = Jinja2Templates(directory="templates")
+SESSION_KEY = "oauth2_credentials"
 
 
 @router.get("/authorize", response_class=HTMLResponse)
-async def authorization_request(request: Request):
+async def authorization_request(request: Request, templates: Annotated[Jinja2Templates, Depends(get_templates)]):
     uri, http_method, body, headers = await extract_params(request)
     try:
         scopes, credentials = provider.validate_authorization_request(uri, http_method, body, headers)
 
         # Not necessarily in session but they need to be
         # accessible in the POST view after form submit.
-        request.session["oauth2_credentials"] = credentials
+        request.session[SESSION_KEY] = credentials
 
         return templates.TemplateResponse(
             "authorize.html",
@@ -45,7 +45,7 @@ async def authorization_request(request: Request):
 @router.post("/authorize")
 async def authorize(request: Request, scopes: Annotated[list[str], Form()]):
     uri, http_method, body, headers = await extract_params(request)
-    credentials = request.session.get("oauth2_credentials", {})
+    credentials = request.session.get(SESSION_KEY, {})
 
     try:
         headers, body, status = provider.create_authorization_response(

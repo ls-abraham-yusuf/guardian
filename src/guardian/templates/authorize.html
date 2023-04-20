@@ -8,10 +8,13 @@
 </head>
 <body>
     <h1> Authorize access to {{ credentials.client_id }} </h1>
-    <form method="POST" action="/authorize">
-        {% for scope in scopes %}
-            <input type="checkbox" name="scopes" value="{{ scope }}" /> {{ scope }}
-        {% endfor %}
+    <form method="POST" action="{{ url_for('authorize') }}">
+        <p>Requested scopes:</p>
+        <ol>
+            {% for scope in scopes %}
+                <li><input type="checkbox" name="scopes" value="{{ scope }}" /> {{ scope }}</li>
+            {% endfor %}
+        </ol>
         <input type="submit" value="Authorize" />
     </form>
 </body>

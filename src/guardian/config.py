@@ -28,5 +28,11 @@ class Guardian(ApiServiceSettings, LogSettings):
     # templates directory
     TEMPLATES_DIR: Path = Path(__file__).parent / "templates"
 
+    # secret key for session middleware
+    SECRET_KEY: str = "secret"
+
+    # name of the session cookie
+    SESSION_COOKIE: str = "SESSION"
+
 
 guardian = Guardian()

@@ -10,7 +10,10 @@ RequestParams: TypeAlias = tuple[str, str, bytes, dict[str, str]]
 
 async def extract_params(request: Request) -> RequestParams:
     url = str(request.url)
-    body = await request.body()
+    try:
+        body = await request.body()
+    except RuntimeError:
+        body = b""
     return url, request.method, body, dict(request.headers)
 
 

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from lssvc.logs import initialize_logging
 from lssvc.management import Management
+from starlette.middleware.sessions import SessionMiddleware
 from structlog import get_logger
 
 from guardian import config
@@ -12,8 +13,14 @@ from guardian.routers import auth
 log = get_logger()
 
 app = FastAPI(title="guardian")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=config.guardian.SECRET_KEY,
+    session_cookie=config.guardian.SESSION_COOKIE,
+    same_site="none",
+    https_only=False,
+)
 app.mount("/static", StaticFiles(directory=config.guardian.STATIC_DIR), name="static")
-
 management = Management()
 
 
