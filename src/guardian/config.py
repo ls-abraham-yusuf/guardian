@@ -34,5 +34,21 @@ class Guardian(ApiServiceSettings, LogSettings):
     # name of the session cookie
     SESSION_COOKIE: str = "SESSION"
 
+    # redis settings
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_USER: str = "default"
+    REDIS_PASSWORD: str = ""
+    REDIS_USE_SSL: bool = False
+    REDIS_DB: int = 0
+
+    @property
+    def redis_url(self):
+        scheme = "rediss" if self.REDIS_USE_SSL else "redis"
+        return (
+            f"{scheme}://{self.REDIS_USER}:{self.REDIS_PASSWORD}@"  # pragma: allowlist secret
+            "{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+        )
+
 
 guardian = Guardian()
