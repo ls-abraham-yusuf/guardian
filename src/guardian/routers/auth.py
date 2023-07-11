@@ -1,17 +1,17 @@
 from typing import Annotated
 
-import structlog
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import FatalClientError, MetadataEndpoint, OAuth2Error
+from structlog import get_logger
 
 from guardian.dependencies import get_templates
 from guardian.openid import extract_params, provider
 
 router = APIRouter()
 
-log = structlog.get_logger()
+log = get_logger()
 
 SESSION_KEY = "oauth2_credentials"
 

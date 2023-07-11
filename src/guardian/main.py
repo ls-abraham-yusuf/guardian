@@ -1,31 +1,24 @@
-from logging import getLogger
-
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from lssvc.logs import initialize_logging
-from lssvc.management import Management
+from ls_logging import setup_logging
 from structlog import get_logger
 
-from guardian import config
+from guardian.config import guardian
 from guardian.middleware import register_middlewares
-from guardian.routers import auth
+from guardian.routers import auth, health
 
 log = get_logger()
 
 app = FastAPI(title="guardian")
-app.mount("/static", StaticFiles(directory=config.guardian.STATIC_DIR), name="static")
+app.mount("/static", StaticFiles(directory=guardian.server.STATIC_FILES_DIR), name="static")
 
-register_middlewares(app, config.guardian)
-management = Management()
+register_middlewares(app, guardian)
 
 
 @app.on_event("startup")
 async def startup_event():
-    initialize_logging()
-    log.info(f"Initializing API on port {config.guardian.SERVER_PORT}")
-
-    # TODO: Quick fix for uvicorn logs, remove if fixed in `lssvc.logs`
-    getLogger("uvicorn.access").disabled = not config.guardian.ENABLE_ACCESS_LOG
+    setup_logging(guardian.logging)
+    log.info(f"Initializing API on port {guardian.server.PORT}")
 
 
 @app.on_event("shutdown")
@@ -34,5 +27,5 @@ async def shutdown_event():
 
 
 # Register your routers here
-app.include_router(management.get_router(), prefix="/management")
+app.include_router(health.router, prefix="/management")
 app.include_router(auth.router, prefix="/oauth", tags=["OAuth2"])

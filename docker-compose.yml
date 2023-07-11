@@ -8,28 +8,47 @@ services:
         MODULE_NAME: "guardian"
         EXTRA_INDEX_URLS: >-
           --extra-index-url https://${PYPI_USER}:${PYPI_RWD_TOKEN}@lightspeedhq.jfrog.io/artifactory/api/pypi/pypi-local/simple"
+    depends_on:
+      # dynamodb:
+      redis:
+        condition: service_healthy
     environment:
       AUTHENTICATION_ENABLED: 0
       ENABLE_RELOAD: 1
       ENABLE_PRETTY_JSON_LOGS: 1
       LOG_LEVEL: "debug"
+      AWS_ACCESS_KEY_ID: "super-secret"
+      AWS_SECRET_ACCESS_KEY: "super-super-secret" # pragma: allowlist secret
+      REGION: "eu-west-1"
     networks:
       - internal
     ports:
       - "8080:8080"
 
   dynamodb:
-   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-   image: "amazon/dynamodb-local:latest"
-   container_name: dynamodb
-   networks:
-    - internal
-   volumes:
-     - dynamodb-data:/home/dynamodb/data
-   working_dir: /home/dynamodb
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    image: amazon/dynamodb-local:latest
+    networks:
+      - internal
+    volumes:
+      - dynamodb-data:/home/dynamodb/data
+    working_dir: /home/dynamodb
+
+  redis:
+    image: redis:7.0-alpine
+    networks:
+      - internal
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -c PING | grep -q PONG"]
+      interval: 5s
+      timeout: 1s
+      retries: 10
 
 networks:
   internal:
 
 volumes:
   dynamodb-data:
+  redis-data:

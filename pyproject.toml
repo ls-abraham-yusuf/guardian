@@ -2,19 +2,17 @@
 name = "guardian"
 version = "0.1.0"
 description = "This is a super awesome bootstrapped Python project"
-authors = [
-    "Abraham Yusuf <abraham.yusuf@lightspeedhq.com>"
-]
+authors = ["Abraham Yusuf <abraham.yusuf@lightspeedhq.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 uvicorn = "^0.20"
-lssvc = "^0.1"
-oauthlib = {extras = ["signedtoken"], version = "^3.2.2"}
-pydantic = {extras = ["email"], version = "^1.10.7"}
+oauthlib = { extras = ["signedtoken"], version = "^3.2.2" }
+pydantic = { extras = ["email"], version = "^1.10.7" }
 jinja2 = "^3.1.2"
-fastapi = {extras = ["all"], version = "^0.95.1"}
-redis = {extras = ["hiredis"], version = "^4.5.4"}
+fastapi = { extras = ["all"], version = "^0.95.1" }
+redis = { extras = ["hiredis"], version = "^4.5.4" }
+ls-logging = {version = "^1.0.1", source = "lsk-pypi"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2"
@@ -27,21 +25,20 @@ pre-commit = ">=2.20"
 ruff = ">=0.0.235"
 detect-secrets = { git = "https://github.com/ibm/detect-secrets.git", tag = "0.13.1+ibm.56.dss" }
 
+[[tool.poetry.source]]
+name = "lsk-pypi"
+url = "https://lsk-809245501444.d.codeartifact.us-east-1.amazonaws.com/pypi/lsk-pypi/simple"
+default = false
+secondary = true
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[[tool.poetry.source]]
-name = "lsh"
-url = "https://lightspeedhq.jfrog.io/artifactory/api/pypi/pypi-local/simple"
-
 [tool.pytest.ini_options]
 minversion = "6.2"
 addopts = "--asyncio-mode=auto --color=yes --tb=short -vvv -ra"
-testpaths = [
-    "tests/unit_tests",
-    "tests/integration_tests",
-]
+testpaths = ["tests/unit_tests", "tests/integration_tests"]
 
 [tool.black]
 line-length = 120
@@ -58,7 +55,7 @@ line-length = 120
 target-version = "py310"
 
 [tool.pylint.master]
-ignore-paths = [ "^tests/.*$" ]
+ignore-paths = ["^tests/.*$"]
 
 [tool.pylint.messages_control]
 disable = "R0903, W0511, E0401, C0114, C0115, C0116"

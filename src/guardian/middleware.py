@@ -117,11 +117,11 @@ class SessionMiddleware:
 
 
 def register_middlewares(app: FastAPI, config: Guardian):
-    app.add_middleware(RedisMiddleware, url=config.redis_url)
+    app.add_middleware(RedisMiddleware, url=config.redis.uri)
     app.add_middleware(
         SessionMiddleware,
-        secret_key=config.SECRET_KEY,
-        session_cookie=config.SESSION_COOKIE,
+        secret_key=config.server.SECRET_KEY,
+        session_cookie=config.server.SESSION_COOKIE_NAME,
         same_site="none",
         https_only=False,
     )
