@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from typing import Annotated
+
+from fastapi import Depends, FastAPI
 from fastapi.staticfiles import StaticFiles
 from ls_logging import setup_logging
 from structlog import get_logger
 
 from guardian.config import guardian
+from guardian.dependencies import create_dynamodb_table
 from guardian.middleware import register_middlewares
 from guardian.routers import auth, health
 
@@ -16,7 +19,7 @@ register_middlewares(app, guardian)
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event(_: Annotated[None, Depends(create_dynamodb_table)]):
     setup_logging(guardian.logging)
     log.info(f"Initializing API on port {guardian.server.PORT}")
 

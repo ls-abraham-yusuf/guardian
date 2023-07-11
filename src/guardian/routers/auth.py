@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import FatalClientError, MetadataEndpoint, OAuth2Error
 from structlog import get_logger
 
-from guardian.dependencies import get_templates
+from guardian.dependencies import get_jinja2_templates
 from guardian.openid import extract_params, provider
 
 router = APIRouter()
@@ -17,7 +17,7 @@ SESSION_KEY = "oauth2_credentials"
 
 
 @router.get("/authorize", response_class=HTMLResponse)
-async def authorization_request(request: Request, templates: Annotated[Jinja2Templates, Depends(get_templates)]):
+async def authorization_request(request: Request, templates: Annotated[Jinja2Templates, Depends(get_jinja2_templates)]):
     uri, http_method, body, headers = await extract_params(request)
     try:
         scopes, credentials = provider.validate_authorization_request(uri, http_method, body, headers)
