@@ -1,7 +1,7 @@
 from fastapi.templating import Jinja2Templates
 
-from guardian import config
+from guardian.config import guardian
 
 
 def get_templates() -> Jinja2Templates:
-    return Jinja2Templates(directory=config.guardian.TEMPLATES_DIR)
+    return Jinja2Templates(directory=guardian.server.JINJA2_TEMPLATES_DIR)
