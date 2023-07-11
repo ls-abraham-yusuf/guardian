@@ -46,20 +46,6 @@ testpaths = [
 [tool.black]
 line-length = 120
 
-# Uncomment for pyright, make it stricter if you like by keeping the report* commented out
-# [tool.pyright]
-# venv = ".venv"
-# typeCheckingMode = "strict"
-# reportUnknownMemberType = "none"
-# reportUnknownVariableType = "none"
-# reportUnknownParameterType = "none"
-# reportMissingTypeStubs = "none"
-# reportUnknownArgumentType = "none"
-# reportMissingParameterType = "none"
-# reportMissingTypeArgument = "none"
-# reportUntypedFunctionDecorator = "none"
-# reportUntypedBaseClass = "none"
-
 # See also: https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html
 [tool.isort]
 profile = "black"

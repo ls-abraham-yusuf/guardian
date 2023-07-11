@@ -1,13 +1,4 @@
-version: '3.4'
-
-x-environment-variables: &environment-variables
-  AUTHENTICATION_ENABLED: 0
-  ENABLE_RELOAD: 1
-  ENABLE_PRETTY_JSON_LOGS: 1
-  LOG_LEVEL: 'debug'
-
-x-build-args: &build-args
-  EXTRA_INDEX_URLS: "--extra-index-url https://${PYPI_USER:?Environment variable PYPI_USER is not set - check README}:${PYPI_RWD_TOKEN:?Environment variable PYPI_RWD_TOKEN is not set - check README}@lightspeedhq.jfrog.io/artifactory/api/pypi/pypi-local/simple"
+version: "3.8"
 
 services:
   guardian:
@@ -15,8 +6,30 @@ services:
       context: .
       args:
         MODULE_NAME: "guardian"
-        <<: *build-args
+        EXTRA_INDEX_URLS: >-
+          --extra-index-url https://${PYPI_USER}:${PYPI_RWD_TOKEN}@lightspeedhq.jfrog.io/artifactory/api/pypi/pypi-local/simple"
     environment:
-      <<: *environment-variables
+      AUTHENTICATION_ENABLED: 0
+      ENABLE_RELOAD: 1
+      ENABLE_PRETTY_JSON_LOGS: 1
+      LOG_LEVEL: "debug"
+    networks:
+      - internal
     ports:
-      - '127.0.0.1:8081:8080'
+      - "8080:8080"
+
+  dynamodb:
+   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+   image: "amazon/dynamodb-local:latest"
+   container_name: dynamodb
+   networks:
+    - internal
+   volumes:
+     - dynamodb-data:/home/dynamodb/data
+   working_dir: /home/dynamodb
+
+networks:
+  internal:
+
+volumes:
+  dynamodb-data:
