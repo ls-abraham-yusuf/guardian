@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
+from enum import Enum
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -9,7 +9,7 @@ def uuid_str() -> str:
     return str(uuid.uuid4())
 
 
-class GrantType(StrEnum):
+class GrantType(Enum):
     AUTHORIZATION_CODE = "authorization_code"
     CLIENT_CREDENTIALS = "client_credentials"  # pragma: allowlist secret
     IMPLICIT = "implicit"
