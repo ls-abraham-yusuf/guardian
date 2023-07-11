@@ -64,6 +64,14 @@ class SessionMiddleware:
         if https_only:  # Secure flag can be used with HTTPS only
             self.security_flags += "; secure"
 
+    def get_cookie_value(self, data: str) -> str:
+        expires, max_age = "", f"Max-Age={self.max_age}; " if self.max_age else ""
+
+        if data == "null":
+            expires, max_age = "expires=Thu, 01 Jan 1970 00:00:00 GMT; ", ""
+
+        return f"{self.session_cookie}={data}; path={self.path}; {expires}{max_age}{self.security_flags}"
+
     async def extract_data_from_cookies(self, cookies: dict[str, str], backend: SessionBackend) -> dict[str, Any]:
         if self.session_cookie in cookies:
             signed_key = cookies[self.session_cookie]
@@ -77,14 +85,6 @@ class SessionMiddleware:
     async def store_session_data(self, data: dict, backend: SessionBackend) -> str:
         session_id = await backend.set(data, self.max_age)
         return self.signer.sign(session_id).decode("utf-8")
-
-    def get_cookie_header(self, data: str) -> str:
-        expires, max_age = "", f"Max-Age={self.max_age}; " if self.max_age else ""
-
-        if data == "null":
-            expires, max_age = "expires=Thu, 01 Jan 1970 00:00:00 GMT; ", ""
-
-        return f"{self.session_cookie}={data}; path={self.path}; {expires}{max_age}{self.security_flags}"
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] not in ("http", "websocket"):  # pragma: no cover
@@ -104,12 +104,12 @@ class SessionMiddleware:
                     # We have session data to persist.
                     headers = MutableHeaders(scope=message)
                     data = await self.store_session_data(scope["session"], backend)
-                    header_value = self.get_cookie_header(data)
+                    header_value = self.get_cookie_value(data)
                     headers.append("Set-Cookie", header_value)
                 elif not initial_session_was_empty:
                     # The session has been cleared.
                     headers = MutableHeaders(scope=message)
-                    header_value = self.get_cookie_header("null")
+                    header_value = self.get_cookie_value("null")
                     headers.append("Set-Cookie", header_value)
             await send(message)
 
