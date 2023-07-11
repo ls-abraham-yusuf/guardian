@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1.3
-ARG MODULE_NAME="guardian"
-ARG PYTHON_IMAGE=809245501444.dkr.ecr.us-east-1.amazonaws.com/release/internal/image/docker-python3.10:latest-main
+ARG PYTHON_IMAGE=809245501444.dkr.ecr.us-east-1.amazonaws.com/release/internal/image/docker-python3.11:latest-main
 
 FROM ${PYTHON_IMAGE} as builder
 WORKDIR /build
@@ -26,8 +25,8 @@ COPY --from=builder /build/requirements-frozen.txt .
 RUN --mount=type=secret,id=pip.conf,dst=/home/worker/.pip/pip.conf,uid=1000\
       pip install -r requirements-frozen.txt
 
-COPY --from=builder /build/dist/${MODULE_NAME}-*.whl .
-RUN --network=none pip install ./${MODULE_NAME}-*.whl --no-deps
+COPY --from=builder /build/dist/guardian-*.whl .
+RUN --network=none pip install ./guardian-*.whl --no-deps
 
 
 FROM ${PYTHON_IMAGE}
@@ -39,28 +38,5 @@ ENV UVICORN_PORT 8888
 ENV UVICORN_LOG_LEVEL info
 
 USER 1000
-CMD [ "uvicorn", "${MODULE_NAME}:app" ]
-#+++++++++++++++
-
-
-
-
-
-
-# syntax=docker/dockerfile:1.2
-FROM 809245501444.dkr.ecr.us-east-1.amazonaws.com/release/internal/image/docker-python3.11:latest-main as builder
-# Used for non production builds only
-ARG EXTRA_INDEX_URLS=""
-
-WORKDIR /app
-COPY pyproject.toml poetry.lock* ./
-COPY src ./src/
-
-RUN --mount=type=secret,id=pip.conf,dst=/home/worker/.pip/pip.conf,uid=1000 \
-  pip install --user --force-reinstall $EXTRA_INDEX_URLS .
-
-FROM 809245501444.dkr.ecr.us-east-1.amazonaws.com/release/internal/image/docker-python3.11:latest-main
-COPY --from=builder /home/worker/.local /home/worker/.local
-
 
 CMD ["python", "-m", "guardian"]

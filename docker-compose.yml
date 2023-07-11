@@ -4,14 +4,11 @@ services:
   guardian:
     build:
       context: .
-      args:
-        MODULE_NAME: "guardian"
-        EXTRA_INDEX_URLS: >-
-          --extra-index-url https://${PYPI_USER}:${PYPI_RWD_TOKEN}@lightspeedhq.jfrog.io/artifactory/api/pypi/pypi-local/simple"
+      secrets:
+        - pip.conf
     depends_on:
-      # dynamodb:
-      redis:
-        condition: service_healthy
+      - dynamodb
+      - redis
     environment:
       AUTHENTICATION_ENABLED: 0
       ENABLE_RELOAD: 1
@@ -48,6 +45,10 @@ services:
 
 networks:
   internal:
+
+secrets:
+  pip.conf:
+    file: ./pip.conf
 
 volumes:
   dynamodb-data:
