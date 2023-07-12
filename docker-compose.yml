@@ -23,20 +23,22 @@ services:
       - "8080:8080"
 
   dynamodb:
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-    image: amazon/dynamodb-local:latest
-    networks:
-      - internal
-    volumes:
-      - dynamodb-data:/home/dynamodb/data
-    working_dir: /home/dynamodb
+   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+   image: "amazon/dynamodb-local:latest"
+   networks:
+    - internal
+   ports:
+     - "8000:8000"
+   volumes:
+     - "./docker/dynamodb:/home/dynamodblocal/data"
+   working_dir: /home/dynamodblocal
 
   redis:
     image: redis:7.0-alpine
     networks:
       - internal
     volumes:
-      - redis-data:/data
+      - "./docker/redis:/data"
     healthcheck:
       test: ["CMD-SHELL", "redis-cli -c PING | grep -q PONG"]
       interval: 5s
@@ -49,7 +51,3 @@ networks:
 secrets:
   pip.conf:
     file: ./pip.conf
-
-volumes:
-  dynamodb-data:
-  redis-data:

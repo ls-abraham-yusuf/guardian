@@ -51,3 +51,4 @@ env.bak/
 venv.bak/
 
 pip.conf
+docker/
