@@ -6,7 +6,7 @@ from ls_logging import setup_logging
 from structlog import get_logger
 
 from guardian.config import guardian
-from guardian.middleware import register_middlewares
+from guardian.middleware import RedisMiddleware, SessionMiddleware
 from guardian.routers import auth, health
 
 log = get_logger()
@@ -19,8 +19,6 @@ async def lifespan(app: FastAPI):
     log.info(f"Initializing API on port {guardian.server.PORT}")
     app.mount("/static", StaticFiles(directory=guardian.server.STATIC_FILES_DIR), name="static")
 
-    register_middlewares(app, guardian)
-
     # Register your routers here
     app.include_router(health.router, prefix="/management")
     app.include_router(auth.router, prefix="/oauth", tags=["OAuth2"])
@@ -31,3 +29,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="guardian", lifespan=lifespan)
+app.add_middleware(RedisMiddleware, url=guardian.redis.uri)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=guardian.server.SECRET_KEY,
+    session_cookie=guardian.server.SESSION_COOKIE_NAME,
+    same_site="none",
+    https_only=False,
+)

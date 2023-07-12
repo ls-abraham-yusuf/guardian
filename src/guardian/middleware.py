@@ -3,15 +3,12 @@ import uuid
 from typing import Any, Literal, Type
 
 import itsdangerous
-from fastapi import FastAPI
 from itsdangerous.exc import BadSignature
 from redis import asyncio as redis
 from redis.asyncio.connection import ConnectionPool
 from starlette.datastructures import MutableHeaders, Secret
 from starlette.requests import HTTPConnection
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
-
-from guardian.config import Guardian
 
 
 class RedisMiddleware:
@@ -114,14 +111,3 @@ class SessionMiddleware:
             await send(message)
 
         await self.app(scope, receive, send_wrapper)
-
-
-def register_middlewares(app: FastAPI, config: Guardian):
-    app.add_middleware(RedisMiddleware, url=config.redis.uri)
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=config.server.SECRET_KEY,
-        session_cookie=config.server.SESSION_COOKIE_NAME,
-        same_site="none",
-        https_only=False,
-    )
