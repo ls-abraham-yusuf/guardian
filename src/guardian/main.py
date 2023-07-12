@@ -29,7 +29,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="guardian", lifespan=lifespan)
-app.add_middleware(RedisMiddleware, url=guardian.redis.uri)
 app.add_middleware(
     SessionMiddleware,
     secret_key=guardian.server.SECRET_KEY,
@@ -37,3 +36,4 @@ app.add_middleware(
     same_site="none",
     https_only=False,
 )
+app.add_middleware(RedisMiddleware, url=guardian.redis.uri)
