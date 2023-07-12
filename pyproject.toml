@@ -64,7 +64,7 @@ known-first-party = ["guardian"]
 ignore-paths = ["^tests/.*$"]
 
 [tool.pylint.messages_control]
-disable = "R0903, W0511, E0401, C0114, C0115, C0116"
+disable = "R0903, W0511, E0401, C0114, C0115, C0116, W0621"
 
 [tool.pylint.format]
 max-line-length = "120"
