@@ -20,7 +20,6 @@ class GrantType(Enum):
 class User(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    user_id: str = Field(default_factory=uuid_str, max_length=36)
     first_name: str = Field(default="", max_length=150)
     last_name: str = Field(default="", max_length=150)
     is_active: bool = True
@@ -32,18 +31,16 @@ class User(BaseModel):
 
 class Client(BaseModel):
     client_id: str = Field(default_factory=uuid_str, max_length=36)  # unique client id
-    user: User
     grant_type: GrantType = GrantType.AUTHORIZATION_CODE
     response_type: str
-    scopes: str
-    default_scopes: str
+    scopes: list[str]
+    default_scopes: list[str]
     redirect_uris: list[str]
     default_redirect_uri: list[str]
 
 
 class BearerToken(BaseModel):
-    client: Client
-    user: User
+    client_id: str
     scopes: list[str]
     access_token: str = Field(max_length=100)  # unique
     refresh_token: str = Field(max_length=100)  # unique
@@ -51,7 +48,7 @@ class BearerToken(BaseModel):
 
 
 class AuthorizationCode(BaseModel):
-    client: Client
+    client_id: str
     user: User
     scopes: list[str]
     redirect_uri: str
